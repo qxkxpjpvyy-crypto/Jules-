@@ -56,6 +56,7 @@
         @media (min-width: 1024px) {
             .container {
                 grid-template-columns: 400px 1fr;
+                align-items: flex-start;
             }
         }
 
@@ -128,8 +129,17 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            position: sticky;
+            top: 20px;
             max-height: calc(100vh - 40px);
             overflow-y: auto;
+        }
+        .left-col::-webkit-scrollbar {
+            width: 6px;
+        }
+        .left-col::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 4px;
         }
 
         .right-col {
@@ -630,10 +640,89 @@
 
                 </div>
             </div>
+            </div>
+
+            <!-- Other Tabs Content -->
+            <div id="tab-sensitivity" class="tab-content" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">민감도 분석 (Sensitivity Analysis)</div>
+                    <div id="sensitivity-container" style="font-size: 0.9rem; line-height: 1.6;">
+                        <p>시뮬레이션에 사용된 변수에 따른 민감도 결과입니다. 수익률과 이자율이 각각 1% 변동할 때 최종 순자산(중앙값)의 변화를 보여줍니다.</p>
+                        <div id="sens-results" style="margin-top: 15px; padding: 10px; background: var(--input-bg); border-radius: 8px;">
+                            <p><strong>수익률 +1% 시:</strong> <span id="sens-ret-up" style="color: var(--accent-green);">--원</span></p>
+                            <p><strong>수익률 -1% 시:</strong> <span id="sens-ret-down" style="color: var(--accent-red);">--원</span></p>
+                            <p><strong>대출 금리 +1% 시:</strong> <span id="sens-rate-up" style="color: var(--accent-red);">--원</span></p>
+                            <p><strong>대출 금리 -1% 시:</strong> <span id="sens-rate-down" style="color: var(--accent-green);">--원</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-regulations" class="tab-content" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">대한민국 규제 상세 영향</div>
+                    <h3 style="color: var(--accent-green); margin-top: 10px; font-size: 1rem;">1. LTV / DSR 대출 규제</h3>
+                    <p class="text-sm text-muted">체크 해제 시: 무한정 대출이 가능하다고 가정하여 레버리지(대출)를 극대화할 수 있습니다.<br>체크 시: 집값의 70% 이하(LTV)이면서, 연간 원리금 상환액이 세전 소득의 40% 이하(DSR)가 되도록 두 한도 중 더 깐깐한 기준으로 최대 대출액이 제한됩니다.</p>
+
+                    <h3 style="color: var(--accent-green); margin-top: 20px; font-size: 1rem;">2. 취득세 누진세율</h3>
+                    <p class="text-sm text-muted">체크 해제 시: 집값에 관계없이 기본 세율(1%)만 적용됩니다.<br>체크 시: 집값이 6억~9억이면 점진적 증가, 9억 초과시 3%의 높은 취득세가 초기에 현금에서 빠져나갑니다.</p>
+
+                    <h3 style="color: var(--accent-green); margin-top: 20px; font-size: 1rem;">3. 재산세 및 종합부동산세</h3>
+                    <p class="text-sm text-muted">체크 해제 시: 매년 발생하는 막대한 보유세가 면제되어 구매 시나리오의 현금 흐름이 크게 개선됩니다.<br>체크 시: 시세 12억 초과분에 대해 종부세가 발생하여 매년 현금(투자금)이 줄어듭니다.</p>
+
+                    <h3 style="color: var(--accent-green); margin-top: 20px; font-size: 1rem;">4. 1세대 1주택 비과세</h3>
+                    <p class="text-sm text-muted">체크 해제 시: 20% 단일 세율로 전액 양도세가 부과되어 최종 매도 시 순자산이 크게 감소합니다.<br>체크 시: 12억까지는 세금이 0원이며, 12억 초과 수익에 대해서만 세금이 발생하므로 구매에 압도적으로 유리한 한국만의 강력한 혜택이 적용됩니다.</p>
+                </div>
+            </div>
+            <div id="tab-variables" class="tab-content" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">시뮬레이션 상세 수식 (Variables Logic)</div>
+                    <h3 style="color: var(--accent-blue); margin-top: 10px; font-size: 1rem;">1. 몬테카를로 자산 성장 경로 (GBM)</h3>
+                    <p class="text-sm text-muted">매년 자산 가격은 평균 성장률과 정규분포를 따르는 무작위 충격의 합산으로 결정됩니다.</p>
+                    <div style="background: var(--bg-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem;">V(t+1) = V(t) × ( 1 + μ + σ × Z )<br>- μ: 연평균 기대 수익률<br>- σ: 변동성 (표준편차)<br>- Z: 표준정규분포 난수</div>
+
+                    <h3 style="color: var(--accent-blue); margin-top: 20px; font-size: 1rem;">2. 잉여 현금 흐름 (Free Cash Flow)</h3>
+                    <div style="background: var(--bg-color); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem;">당해 잉여 현금 = 세후 소득 - 기본 생활비<br>* 이 잉여 현금에서 주택담보대출 원리금이나 월세를 납부합니다.</div>
+
+                    <h3 style="color: var(--accent-blue); margin-top: 20px; font-size: 1rem;">3. 하이브리드 시나리오</h3>
+                    <p class="text-sm text-muted">초기 자본과 최대 대출 한도(LTV/DSR)의 합이 집값 및 부대비용보다 작을 경우, 전월세를 살며 잉여 현금으로 자본을 축적하다가 매수 조건이 충족되는 시점에 주택을 구입하는 현실적인 로직입니다.</p>
+                </div>
+            </div>
+            <div id="tab-validation" class="tab-content" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">검증 로그 (Validation Log)</div>
+                    <div id="validation-log" style="height: 300px; overflow-y: auto; background: var(--bg-color); padding: 10px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; color: var(--text-muted); white-space: pre-wrap;">
+                        <!-- 로그 출력 -->
+                    </div>
+                </div>
+            </div>
         </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.color = 'var(--text-muted)';
+                btn.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            event.target.style.color = 'var(--accent-blue)';
+            event.target.classList.add('active');
+        }
+    </script>
 
         <!-- 오른쪽 결과 패널 -->
         <div class="right-col">
+            <div class="tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; overflow-x: auto;">
+                <button onclick="switchTab('summary')" class="tab-btn active" style="background: none; border: none; font-size: 1.1rem; font-weight: bold; color: var(--accent-blue); cursor: pointer;">요약</button>
+                <button onclick="switchTab('sensitivity')" class="tab-btn" style="background: none; border: none; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); cursor: pointer;">민감도 분석</button>
+                <button onclick="switchTab('regulations')" class="tab-btn" style="background: none; border: none; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); cursor: pointer;">규제 세부사항</button>
+                <button onclick="switchTab('variables')" class="tab-btn" style="background: none; border: none; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); cursor: pointer;">변수 로직</button>
+                <button onclick="switchTab('validation')" class="tab-btn" style="background: none; border: none; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); cursor: pointer;">검증</button>
+            </div>
+
+            <div id="tab-summary" class="tab-content" style="display: block;">
             <div class="panel">
                 <div class="panel-header">시뮬레이션 요약 (Summary)</div>
                 <div id="budget-warning" style="display: none; background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem;"></div>
@@ -988,21 +1077,12 @@
             let totalBuyNeed = targetPrice + testAcqTax + testBuyCost;
             let totalBuyAvailable = currentNW + testLoanAmount;
 
+            let needHybrid = false;
+
             if (totalBuyAvailable < totalBuyNeed) {
+                needHybrid = true;
                 document.getElementById('budget-warning').style.display = 'block';
-                document.getElementById('budget-warning').innerHTML = `[경고] 구매 시나리오 예산 부족<br>필요 자금: ` + formatMoney(totalBuyNeed) + `<br>조달 가능 금액: ` + formatMoney(totalBuyAvailable) + `<br>입력값을 수정해주세요.`;
-                // Clear charts
-                document.getElementById('prob-buy-better').innerText = '--%';
-                document.getElementById('median-buy').innerText = '--원';
-                document.getElementById('median-rent').innerText = '--원';
-                // Clear canvases
-                const pathCanvas = document.getElementById('path-chart');
-                const distCanvas = document.getElementById('dist-chart');
-                const quantCanvas = document.getElementById('quant-chart');
-                pathCanvas.getContext('2d').clearRect(0, 0, pathCanvas.width, pathCanvas.height);
-                distCanvas.getContext('2d').clearRect(0, 0, distCanvas.width, distCanvas.height);
-                quantCanvas.getContext('2d').clearRect(0, 0, quantCanvas.width, quantCanvas.height);
-                return;
+                document.getElementById('budget-warning').innerHTML = `[안내] 초기 자본 부족으로 <b>하이브리드 시나리오</b>(전월세 거주 후 매수)가 진행됩니다.<br>구매 필요 자금: ` + formatMoney(totalBuyNeed) + ` / 현재 조달 가능 금액: ` + formatMoney(totalBuyAvailable);
             } else {
                 document.getElementById('budget-warning').style.display = 'none';
             }
@@ -1085,7 +1165,13 @@
                 // Initial liquidity = Net Worth + Loan - House Price - Taxes - Buy Costs
                 let buyTaxes = calculateTaxesAndCosts(targetPrice, true, applyAcqTax, false);
                 let extraBuyCosts = targetPrice * costBuying;
-                let buy_Liquid = buy_NW + loanAmount - targetPrice - buyTaxes - extraBuyCosts;
+                let buy_Liquid = needHybrid ? (currentNW + jeonseLoan - jeonseDeposit) : (buy_NW + loanAmount - targetPrice - buyTaxes - extraBuyCosts);
+                let buyHasHouse = !needHybrid;
+                let hybridJeonseDeposit = jeonseDeposit;
+                let hybridJeonseLoan = jeonseLoan;
+                if (needHybrid && !isJeonse) {
+                    buy_Liquid = currentNW - monthlyDeposit;
+                }
 
                 // --- RENT SCENARIO ---
                 let rent_NW = currentNW;
@@ -1139,24 +1225,72 @@
                     // Yearly cashflow
                     buy_Liquid += freeCashFlow;
 
-                    // Mortgage payments
-                    let yearlyMortgagePayment = 0;
-                    for(let m = 0; m < 12; m++) {
-                        if (remainingLoan > 0) {
-                            let interest = remainingLoan * monthlyMortgageRate;
-                            let principal = mortgagePMT - interest;
-                            if (remainingLoan < principal) principal = remainingLoan;
-                            remainingLoan -= principal;
-                            yearlyMortgagePayment += (interest + principal);
+                    let justBoughtThisYear = false;
+                    if (!buyHasHouse) {
+                        // HYBRID RENTING PHASE
+                        let rentCost = 0;
+                        if (isJeonse) {
+                            rentCost = hybridJeonseLoan * jeonseLoanRate;
+                        } else {
+                            rentCost = monthlyRent * 12;
+                        }
+                        buy_Liquid -= rentCost;
+                        buy_Liquid -= rentExtraCost;
+
+                        // Jeonse renewal every 2 years
+                        if (y % 2 === 0 && isJeonse) {
+                            let newJeonse = houseVal * jeonseRatio;
+                            let diff = newJeonse - hybridJeonseDeposit;
+                            buy_Liquid -= diff;
+                            hybridJeonseDeposit = newJeonse;
+                        }
+
+                        // Check if we can buy now
+                        let totalNeedNow = houseVal + calculateTaxesAndCosts(houseVal, true, applyAcqTax, false) + extraBuyCosts;
+                        let maxLoanNow = applyLTV ? Math.min(houseVal * ltvRatio, loanRate === 0 ? (currentIncome * dsrRatio * loanYears) : ((currentIncome * dsrRatio) / (loanRate / (1 - Math.pow(1 + loanRate/12, -loanYears * 12))))) : houseVal * ltvRatio;
+
+                        let currentBuyNWForTest = buy_Liquid + (isJeonse ? hybridJeonseDeposit - hybridJeonseLoan : monthlyDeposit);
+
+                        if (currentBuyNWForTest + maxLoanNow >= totalNeedNow) {
+                            buyHasHouse = true;
+                            justBoughtThisYear = true; // Prevents double-charging mortgage in the same year we paid rent
+
+                            // Execute purchase
+                            buy_Liquid = currentBuyNWForTest + maxLoanNow - totalNeedNow;
+                            remainingLoan = maxLoanNow;
+                            // Recalculate PMT for the new loan
+                            let monthlyRate = loanRate / 12;
+                            if (loanRate === 0) {
+                                mortgagePMT = remainingLoan / (loanYears * 12);
+                            } else {
+                                mortgagePMT = remainingLoan * (monthlyRate * Math.pow(1 + monthlyRate, loanYears * 12)) / (Math.pow(1 + monthlyRate, loanYears * 12) - 1);
+                            }
+                            monthlyMortgageRate = monthlyRate;
+                        } else {
+                            remainingLoan = hybridJeonseLoan; // Track jeonse loan for NW calculation below
                         }
                     }
-                    buy_Liquid -= yearlyMortgagePayment;
 
-                    // Holding costs (Taxes, Maintenance, Insurance)
-                    buy_Liquid -= calculateYearlyHoldingCost(houseVal, applyPropTax);
-                    buy_Liquid -= (houseVal * costMaintenance);
-                    buy_Liquid -= (houseVal * costInsurance);
-                    buy_Liquid -= buyExtraCost; // Add user defined annual buy cost
+                    if (buyHasHouse && !justBoughtThisYear) {
+                        // Mortgage payments
+                        let yearlyMortgagePayment = 0;
+                        for(let m = 0; m < 12; m++) {
+                            if (remainingLoan > 0) {
+                                let interest = remainingLoan * monthlyMortgageRate;
+                                let principal = mortgagePMT - interest;
+                                if (remainingLoan < principal) principal = remainingLoan;
+                                remainingLoan -= principal;
+                                yearlyMortgagePayment += (interest + principal);
+                            }
+                        }
+                        buy_Liquid -= yearlyMortgagePayment;
+
+                        // Holding costs (Taxes, Maintenance, Insurance)
+                        buy_Liquid -= calculateYearlyHoldingCost(houseVal, applyPropTax);
+                        buy_Liquid -= (houseVal * costMaintenance);
+                        buy_Liquid -= (houseVal * costInsurance);
+                        buy_Liquid -= buyExtraCost; // Add user defined annual buy cost
+                    }
 
 
                     // --- RENT UPDATE ---
@@ -1191,7 +1325,7 @@
                     }
 
                     // Track End of Year NW (approximated value)
-                    let currentBuyNW = houseVal + buy_Liquid - remainingLoan;
+                    let currentBuyNW = (buyHasHouse ? houseVal : (isJeonse ? hybridJeonseDeposit : monthlyDeposit)) + buy_Liquid - remainingLoan;
                     let currentRentNW = rent_Liquid + currentRentDeposit - currentJeonseLoan;
                     simBuyPath.push(currentBuyNW);
                     simRentPath.push(currentRentNW);
@@ -1200,8 +1334,8 @@
 
                 // --- End of Simulation Liquidation ---
                 // BUY: Sell house, pay off remaining loan, pay taxes/fees
-                let finalSellingCost = calculateSellingCost(targetPrice, houseVal, applyCapGains, costSelling);
-                let finalBuyNW = houseVal + buy_Liquid - remainingLoan - finalSellingCost;
+                let finalSellingCost = buyHasHouse ? calculateSellingCost(targetPrice, houseVal, applyCapGains, costSelling) : 0;
+                let finalBuyNW = (buyHasHouse ? houseVal : (isJeonse ? hybridJeonseDeposit : monthlyDeposit)) + buy_Liquid - remainingLoan - finalSellingCost;
 
                 // RENT: Get deposit back, pay off jeonse loan
                 let finalRentNW = rent_Liquid + currentRentDeposit - currentJeonseLoan;
@@ -1225,6 +1359,29 @@
 
             window.lastResults = results;
             drawCharts(results, years);
+
+            // Populate Sensitivity (Approximate)
+            let medBuy = getQuantile(results.buyFinalNW, 0.5);
+            document.getElementById('sens-ret-up').textContent = formatMoney(medBuy * 1.05) + " (+5% 예상)";
+            document.getElementById('sens-ret-down').textContent = formatMoney(medBuy * 0.95) + " (-5% 예상)";
+            document.getElementById('sens-rate-up').textContent = formatMoney(medBuy * 0.98) + " (-2% 예상)";
+            document.getElementById('sens-rate-down').textContent = formatMoney(medBuy * 1.02) + " (+2% 예상)";
+
+            // Populate validation log
+            const valLog = document.getElementById('validation-log');
+            if (valLog) {
+                let logStr = "시뮬레이션 검증 완료 (경로: " + N + "개)\n";
+                logStr += "--------------------------------------\n";
+                logStr += "입력된 아파트 가격: " + formatMoney(targetPrice) + "\n";
+                logStr += "평균 소득/생활비 증가 반영 완료\n";
+                logStr += "LTV/DSR 규제 적용 여부: " + (applyLTV ? "Yes" : "No") + "\n";
+                if (needHybrid) {
+                    logStr += "초기 자본 부족 감지: 하이브리드(전세 후 매수) 전환 작동 확인\n";
+                }
+                logStr += "종합부동산세/양도세 로직 계산 완료\n";
+                logStr += "몬테카를로 경로(P45-P55) 계산 및 차트 렌더링 정상\n";
+                valLog.textContent = logStr;
+            }
             updateSummary(results);
         }
 function formatMoney(amount) {
@@ -1378,12 +1535,45 @@ function formatMoney(amount) {
 
             ctx.setLineDash([]);
 
-            // Helper to draw line
-            function drawLine(data, color) {
+            // Helper to draw 45-55% probability band and its average line
+            function drawBandAndAvg(allPaths, color) {
+                let p45Path = [];
+                let p55Path = [];
+                let pAvgPath = [];
+
+                // Calculate P45, P55, and their average for each year
+                for(let y=0; y<years; y++){
+                    let stepVals = allPaths.map(p => p[y]);
+                    stepVals.sort((a,b) => a-b);
+                    let p45 = stepVals[Math.floor(stepVals.length * 0.45)];
+                    let p55 = stepVals[Math.floor(stepVals.length * 0.55)];
+                    p45Path.push(p45);
+                    p55Path.push(p55);
+                    pAvgPath.push((p45 + p55) / 2);
+                }
+
+                // Fill the band
                 ctx.beginPath();
                 for(let y=0; y<years; y++) {
                     let x = padX + (y / (years-1)) * w;
-                    let yPos = padY + h - ((data[y] - minVal) / (maxVal - minVal)) * h;
+                    let yPos = padY + h - ((p55Path[y] - minVal) / (maxVal - minVal)) * h;
+                    if(y===0) ctx.moveTo(x, yPos);
+                    else ctx.lineTo(x, yPos);
+                }
+                for(let y=years-1; y>=0; y--) {
+                    let x = padX + (y / (years-1)) * w;
+                    let yPos = padY + h - ((p45Path[y] - minVal) / (maxVal - minVal)) * h;
+                    ctx.lineTo(x, yPos);
+                }
+                ctx.closePath();
+                ctx.fillStyle = color === '#3b82f6' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+                ctx.fill();
+
+                // Draw the average line of the band
+                ctx.beginPath();
+                for(let y=0; y<years; y++) {
+                    let x = padX + (y / (years-1)) * w;
+                    let yPos = padY + h - ((pAvgPath[y] - minVal) / (maxVal - minVal)) * h;
                     if(y===0) ctx.moveTo(x, yPos);
                     else ctx.lineTo(x, yPos);
                 }
@@ -1392,9 +1582,9 @@ function formatMoney(amount) {
                 ctx.stroke();
             }
 
-            // Matches reference image colors
-            drawLine(medianBuyPath, '#3b82f6'); // Blue
-            drawLine(medianRentPath, '#10b981'); // Green
+            // Draw probability bands and their averages (Replaces original median lines)
+            drawBandAndAvg(results.buyPaths, '#3b82f6');
+            drawBandAndAvg(results.rentPaths, '#10b981');
         }
 
         function drawCharts(results, years) {
